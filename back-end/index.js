@@ -15,10 +15,16 @@ app.post("/create-checkout-session", async (req, res) => {
   try {
     const { items } = req.body;
     
-    const lineItems = items.map(item => ({
-      price: item.priceId,
-      quantity: item.quantity || 1,
-    }));
+    const lineItems = items
+      .filter(item => item.quantity > 0)
+      .map(item => ({
+        price: item.priceId,
+        quantity: parseInt(item.quantity)
+      }));
+
+    if (lineItems.length === 0) {
+      return res.status(400).json({ error: "少なくとも1つ以上の商品を選択してください" });
+    }
 
     const session = await stripe.checkout.sessions.create({
       billing_address_collection: "auto",
