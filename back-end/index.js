@@ -12,19 +12,17 @@ app.use(express.json());
 const YOUR_DOMAIN = "http://localhost:3000";
 
 app.post("/create-checkout-session", async (req, res) => {
-
   try {
-    const prices = await stripe.prices.list({});
-    // console.log(prices);
+    const { items } = req.body;
+    
+    const lineItems = items.map(item => ({
+      price: item.priceId,
+      quantity: item.quantity || 1,
+    }));
+
     const session = await stripe.checkout.sessions.create({
       billing_address_collection: "auto",
-      line_items: [
-        {
-          price: prices.data[0].id,
-          // For metered billing, do not pass quantity
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "subscription",
       success_url: `${YOUR_DOMAIN}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${YOUR_DOMAIN}/cancel.html`,
@@ -33,6 +31,7 @@ app.post("/create-checkout-session", async (req, res) => {
     res.redirect(303, session.url);
   } catch (err) {
     console.log(err);
+    res.status(500).json({ error: err.message });
   }
 });
 

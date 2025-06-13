@@ -4,11 +4,20 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>商品選択</title>
 </head>
 <body>
     <form action="/create-checkout-session" method="post">
-        <p>2000円の商品です</p>
+        <div>
+            <p>基本プラン (2,000円/月)</p>
+            <input type="number" name="items[0][quantity]" value="0" min="0">
+            <input type="hidden" name="items[0][priceId]" value="price_1RZSZjRolsevXpbsgvNaEkiQ">
+        </div>
+        <div>
+            <p>プレミアムプラン (5,000円/月)</p>
+            <input type="number" name="items[1][quantity]" value="0" min="0">
+            <input type="hidden" name="items[1][priceId]" value="price_1RZQyKRolsevXpbsNj9RsI4z">
+        </div>
         <button type="submit">Checkout</button>
     </form>
 </body>
