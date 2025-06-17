@@ -4,7 +4,16 @@ const stripe = require("stripe")(
 );
 
 const express = require("express");
+const cors = require("cors");
 const app = express();
+
+// CORSの設定
+app.use(cors({
+  origin: 'http://localhost:5173', // フロントエンドのURL
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

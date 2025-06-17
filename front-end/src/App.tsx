@@ -1,34 +1,98 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import axios from 'axios'
+import type { StripeItem, CheckoutResponse, ErrorResponse } from './types/stripe'
 import './App.css'
 
+const API_BASE_URL = 'http://localhost:3000';
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [items, setItems] = useState<StripeItem[]>([
+    { priceId: 'price_1RZSZjRolsevXpbsgvNaEkiQ', quantity: 0 },  // RX-7
+    { priceId: 'price_1RZQyKRolsevXpbsNj9RsI4z', quantity: 0 }   // レビン
+  ]);
+
+  const handleQuantityChange = (index: number, value: string): void => {
+    const newItems = [...items];
+    newItems[index].quantity = parseInt(value) || 0;
+    setItems(newItems);
+  };
+
+  const handleCheckout = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    
+    const selectedItems = items.filter(item => item.quantity > 0);
+    if (selectedItems.length === 0) {
+      alert('どちらかの商品を選択してください');
+      return;
+    }
+    
+    try {
+      const response = await axios.post<CheckoutResponse>(`${API_BASE_URL}/create-checkout-session`, {
+        items: selectedItems
+      });
+      
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = axios.isAxiosError(error) && error.response?.data 
+        ? (error.response.data as ErrorResponse).error 
+        : 'エラーが発生しました';
+      alert(errorMessage);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ maxWidth: '600px', margin: '20px auto', padding: '20px' }}>
+      <h1>商品選択</h1>
+      <form onSubmit={handleCheckout}>
+        <div style={{ marginBottom: '20px' }}>
+          <h3>おみやげRX-7</h3>
+          <p>700万円</p>
+          <label>
+            数量:
+            <input
+              type="number"
+              value={items[0].quantity}
+              onChange={(e) => handleQuantityChange(0, e.target.value)}
+              min="0"
+              style={{ marginLeft: '10px' }}
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <h3>おみやげレビン</h3>
+          <p>250万円</p>
+          <label>
+            数量:
+            <input
+              type="number"
+              value={items[1].quantity}
+              onChange={(e) => handleQuantityChange(1, e.target.value)}
+              min="0"
+              style={{ marginLeft: '10px' }}
+            />
+          </label>
+        </div>
+
+        <button 
+          type="submit"
+          style={{
+            backgroundColor: '#6772e5',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          チェックアウト
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      </form>
+    </div>
   )
 }
 
