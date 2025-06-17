@@ -32,6 +32,15 @@ app.post("/create-checkout-session", async (req, res) => {
       mode: "subscription",
       success_url: `${YOUR_DOMAIN}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${YOUR_DOMAIN}/cancel.html`,
+
+      shipping_address_collection: {
+        allowed_countries: ["JP"],
+      },
+
+      phone_number_collection: {
+        enabled: true,
+      },
+      
     });
 
     res.redirect(303, session.url);
